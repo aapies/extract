@@ -71,7 +71,7 @@ if uploaded_file is not None:
 # Step 3: Parse the content with BeautifulSoup (only if email_body exists)
 if email_body:
     soup = BeautifulSoup(email_body, 'html.parser')
-    st.write(soup.prettify())  # Nicely formatted output of the HTML content
+    st.write("Nicely formatted output of the HTML content")  # Nicely formatted output of the HTML content
 else:
     st.write("No content found in the email.")
 
