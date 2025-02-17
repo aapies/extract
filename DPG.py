@@ -1,13 +1,16 @@
 import streamlit as st
+import re
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 from time import sleep
+import pandas as pd
 
-# ✅ Caching WebDriver instance for better performance
+# ✅ Caching WebDriver instance for performance
 @st.cache_resource
 def get_driver():
     options = Options()
@@ -20,51 +23,81 @@ def get_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
-# ✅ Function to extract title and introduction (without cookie handling)
-def extract_title_and_introduction_selenium(url):
+# ✅ Function to extract title and introduction (can handle both DataFrame rows & single URLs)
+def process_row(row_or_url):
+    """
+    Extracts title and introduction.
+    - If given a dictionary (row from DataFrame), processes based on "Publisher" and "Link".
+    - If given a direct URL (string), processes the single URL.
+    """
+
+    # Determine if input is a row (dict) or direct URL (string)
+    if isinstance(row_or_url, dict):
+        # Processing a row from DataFrame
+        if "volkskrant" not in row_or_url["Publisher"].lower():
+            return row_or_url  # Skip rows that don't match the condition
+        url = row_or_url["Link"]
+    else:
+        # Processing a direct URL input (string)
+        url = row_or_url
+
+    driver = get_driver()  # ✅ Use Chromium WebDriver
+
     try:
-        driver = get_driver()  # ✅ Use the cached driver
-        driver.get(url)
-        sleep(3)  # Allow time for content to load
+        # Construct the link with removepaywall prefix
+        full_url = f"https://www.removepaywall.com/search?url={url}"
+        
+        # Step 1: Get the archive link
+        driver.get(full_url)
+        driver.implicitly_wait(10)  # Wait up to 10 seconds for elements to load
+        
+        # Locate the iframe and extract its src attribute
+        try:
+            iframe = driver.find_element(By.TAG_NAME, "iframe")
+            archive_url = iframe.get_attribute("src")
+        except:
+            if isinstance(row_or_url, dict):
+                row_or_url["title sel"] = "No iframe found"
+                row_or_url["intro sel"] = "No iframe found"
+                return row_or_url
+            return "No iframe found", "No iframe found"
 
-        # ✅ Extract the page source
-        html_content = driver.page_source
-
-        # ✅ Parse with BeautifulSoup
-        soup = BeautifulSoup(html_content, "html.parser")
-
-        # ✅ Extract Title
-        title = soup.title.text.strip() if soup.title else "Title not found"
-
-        # ✅ Extract Introduction (with fallback mechanism)
-        meta_description = soup.find("meta", attrs={"name": "description"})
-        if meta_description and "content" in meta_description.attrs:
-            meta_content = meta_description["content"]
-            # If meta content ends with "...", check if a longer fallback exists
-            if meta_content.endswith("..."):
-                title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
-                if title_tag:
-                    first_paragraph = title_tag.find_next("p")
-                    fallback_content = first_paragraph.text.strip() if first_paragraph else ""
-                    introduction = fallback_content if len(fallback_content) > len(meta_content) else meta_content
-                else:
-                    introduction = meta_content
+        # Step 2: Extract the title and introduction from the archive page
+        driver.get(archive_url)
+        driver.implicitly_wait(10)  # Wait for the page to load
+        
+        # Get the full HTML source
+        html = driver.page_source
+        
+        # Find the section containing the introduction using raw HTML
+        section_match = re.search(r'<section.*?>(.*?)</section>', html, re.DOTALL)
+        if section_match:
+            section_content = section_match.group(1)
+            
+            # Stop at the first </div> and extract text
+            div_match = re.search(r'<div.*?>(.*?)</div>', section_content, re.DOTALL)
+            if div_match:
+                raw_intro_html = div_match.group(1)  # Raw HTML of the first <div>
+                introduction = re.sub(r'<.*?>', '', raw_intro_html).strip()  # Strip any remaining HTML tags
             else:
-                introduction = meta_content
+                introduction = "No introduction found"
         else:
-            # Fall back to extracting the first <p> after the title header
-            title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
-            if title_tag:
-                # Find the first <p> after the title
-                first_paragraph = title_tag.find_next("p")  
-                introduction = first_paragraph.text.strip() if first_paragraph else "First paragraph not found."
-            else:
-                introduction = "Introduction not found."
-
-        return title, introduction
-
-    except Exception as e:
-        return "Error", f"Error: {str(e)}"
+            introduction = "No content section found"
+        
+        # Extract the title
+        title_match = re.search(r'<h1.*?>(.*?)</h1>', html, re.DOTALL)
+        title = re.sub(r'<.*?>', '', title_match.group(1)).strip() if title_match else "No title found"
+        
+        # Update the row if processing a DataFrame
+        if isinstance(row_or_url, dict):
+            row_or_url["title sel"] = title
+            row_or_url["intro sel"] = introduction
+            return row_or_url
+        
+        return title, introduction  # Return title & intro for single URL input
+    
+    finally:
+        driver.quit()  # ✅ Close the browser instance
 
 # ✅ Streamlit UI
 st.title("Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
@@ -73,7 +106,7 @@ url = st.text_input("Enter URL to scrape")
 
 if st.button("Scrape"):
     if url:
-        title, introduction = extract_title_and_introduction_selenium(url)
+        title, introduction = process_row(url)  # ✅ Now supports direct URL input
         st.subheader("Extracted Title:")
         st.write(title)
         st.subheader("Extracted Introduction:")
