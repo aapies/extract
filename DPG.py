@@ -138,7 +138,7 @@ import requests
 from openai import OpenAI
 
 # ✅ Load API Key from Streamlit secrets
-openai.api_key = st.secrets["openai_api_key"]
+api_key = st.secrets["openai_api_key"]
 
 # ✅ Initialize OpenAI Client (No `api_key` needed in `OpenAI()` call)
 client = OpenAI(api_key=api_key)
