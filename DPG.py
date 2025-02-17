@@ -22,7 +22,7 @@ def get_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
-# ✅ Function to process "volkskrant" URLs via removepaywall.com
+# ✅ Function to process "Volkskrant" URLs via removepaywall.com
 def process_volkskrant_url(url):
     try:
         driver = get_driver()
@@ -30,7 +30,7 @@ def process_volkskrant_url(url):
 
         # Step 1: Get archive link
         driver.get(full_url)
-        sleep(3)  # Allow page load
+        sleep(5)  # Allow page load
 
         # Locate the iframe and extract its src attribute
         try:
@@ -41,7 +41,7 @@ def process_volkskrant_url(url):
 
         # Step 2: Extract title & intro from the archive page
         driver.get(archive_url)
-        sleep(3)  # Allow page load
+        sleep(5)  # Allow page load
         html = driver.page_source
 
         # ✅ Extract Introduction
