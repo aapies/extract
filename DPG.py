@@ -31,6 +31,6 @@ with st.echo():
     options.add_argument("--headless")
 
     driver = get_driver()
-    driver.get("http://example.com")
+    driver.get("https://www.hln.be/binnenland/een-voordelige-lening-tot-25-000-euro-per-woning-zo-wil-depraetere-renovatie-van-appartementen-vereenvoudigen~a7ece6fd/")
 
     st.code(driver.page_source)
