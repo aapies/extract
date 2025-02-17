@@ -135,24 +135,7 @@ from openai import OpenAI
 # ✅ Load API Key from Streamlit secrets
 api_key = st.secrets.get("openai_api_key", None)
 
-if api_key:
-    # ✅ Print only the first 5 characters for security
-    st.write(f"🔑 API Key Loaded: {api_key[:5]}***** (hidden for security)")
-    
-    # ✅ Initialize OpenAI client
-    client = OpenAI(api_key=api_key)
-
-    # ✅ Example API call
-    completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": "Hello, how are you?"}]
-    )
-
-    st.write(completion.choices[0].message["content"])
-else:
-    st.error("🚨 API Key is missing. Please check Streamlit secrets configuration.")
-
-
+client = OpenAI(api_key)
 
 # #### Test openai API
 
