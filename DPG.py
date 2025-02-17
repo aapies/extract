@@ -130,18 +130,28 @@ df = pd.DataFrame(articles)
 
 # In[6]:
 import streamlit as st
-import requests
-
 from openai import OpenAI
-
-from openai import OpenAI
-import streamlit as st
 
 # ✅ Load API Key from Streamlit secrets
-api_key = st.secrets["openai_api_key"]
+api_key = st.secrets.get("openai_api_key", None)
 
-# ✅ Initialize OpenAI Client (Correct way in v1.3.0)
-client = OpenAI(api_key=api_key)
+if api_key:
+    # ✅ Print only the first 5 characters for security
+    st.write(f"🔑 API Key Loaded: {api_key[:5]}***** (hidden for security)")
+    
+    # ✅ Initialize OpenAI client
+    client = OpenAI(api_key=api_key)
+
+    # ✅ Example API call
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": "Hello, how are you?"}]
+    )
+
+    st.write(completion.choices[0].message["content"])
+else:
+    st.error("🚨 API Key is missing. Please check Streamlit secrets configuration.")
+
 
 
 # #### Test openai API
