@@ -1,53 +1,31 @@
-import os
 import time
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
-# ✅ Download & Set Up Firefox & Geckodriver for Streamlit Cloud
-@st.cache_resource
-def setup_firefox():
-    firefox_bin_path = "/usr/local/bin/firefox/firefox"
-    geckodriver_bin_path = "/usr/local/bin/geckodriver"
-
-    # ✅ Download Firefox
-    if not os.path.exists(firefox_bin_path):
-        os.system("mkdir -p /usr/local/bin/firefox")
-        os.system("wget -q https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US -O /usr/local/bin/firefox/firefox.tar.bz2")
-        os.system("tar xjf /usr/local/bin/firefox/firefox.tar.bz2 -C /usr/local/bin/firefox --strip-components=1")
-        os.system("rm /usr/local/bin/firefox/firefox.tar.bz2")
-    
-    # ✅ Download Geckodriver
-    if not os.path.exists(geckodriver_bin_path):
-        os.system("wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz")
-        os.system("tar -xvzf geckodriver-linux64.tar.gz")
-        os.system("chmod +x geckodriver")
-        os.system("mv geckodriver /usr/local/bin/")
-        os.system("rm geckodriver-linux64.tar.gz")
-
-    return firefox_bin_path, geckodriver_bin_path
-
-# 🚀 Ensure Firefox & Geckodriver are installed
-firefox_path, geckodriver_path = setup_firefox()
-
-# Function to extract title and introduction using Selenium in Streamlit
+# ✅ Function to extract title and introduction using Headless Chromium in Streamlit
 def extract_title_and_introduction_selenium(url):
     try:
-        # Set up Selenium with Firefox in headless mode
-        firefox_options = Options()
-        firefox_options.add_argument("--headless")  # Run in headless mode
-        #firefox_options.set_preference("browser.privatebrowsing.autostart", True)  # Ensures private mode
-        #firefox_options.set_preference("profile", profile_path)  # Load custom Firefox profile (if applicable)
+        # Set up Selenium with Chromium in headless mode
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # Run in headless mode
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--window-size=1920x1080")  # Prevent viewport issues
 
-        # Initialize WebDriver for Firefox
-        service = Service(GeckoDriverManager().install())
-        driver = webdriver.Firefox(service=service, options=firefox_options)
+        # ✅ Use pre-installed Chromium instead of Firefox
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
+
+        # Initialize WebDriver with Chromium
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
 
         # Open the website
         driver.get(url)
