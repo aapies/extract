@@ -1,61 +1,52 @@
-import os
-import time
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
+from time import sleep
 
-# ✅ Manually Install & Set Up Chromium & ChromeDriver in Streamlit Cloud
+# ✅ Cache WebDriver instance for better performance
 @st.cache_resource
-def setup_chrome():
-    chrome_bin = "/usr/bin/chromium-browser"
-    chromedriver_bin = "/usr/bin/chromedriver"
+def get_driver():
+    options = Options()
+    options.add_argument("--disable-gpu")
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")  # Helps with memory issues
 
-    # ✅ Ensure ChromeDriver is correctly installed
-    if not os.path.exists(chromedriver_bin):
-        os.system("wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip")
-        os.system("unzip chromedriver_linux64.zip")
-        os.system("chmod +x chromedriver")
-        os.system("mv chromedriver /usr/bin/chromedriver")
-        os.system("rm chromedriver_linux64.zip")
+    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    driver = webdriver.Chrome(service=service, options=options)
+    return driver
 
-    return chrome_bin, chromedriver_bin
-
-# 🚀 Ensure Chrome & ChromeDriver are set up
-chrome_path, chromedriver_path = setup_chrome()
-
-# ✅ Function to extract title & introduction using Headless Chromium
+# ✅ Function to extract title & introduction
 def extract_title_and_introduction_selenium(url):
     try:
-        # ✅ Set up Selenium with Chromium in headless mode
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Run in headless mode
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--window-size=1920x1080")
-        chrome_options.binary_location = chrome_path  # ✅ Set Chrome binary location
-
-        # ✅ Initialize WebDriver
-        service = Service(chromedriver_path)
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-
-        # ✅ Open the website
+        driver = get_driver()  # ✅ Use the cached driver
         driver.get(url)
-        time.sleep(3)  # Allow page load
+        sleep(3)  # Allow time for content to load
 
-        # ✅ Extract title & introduction using BeautifulSoup
-        soup = BeautifulSoup(driver.page_source, "html.parser")
-        driver.quit()  # Close browser
+        # ✅ Extract the page source
+        html_content = driver.page_source
 
-        # Extract Title
+        # ✅ Parse with BeautifulSoup
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # ✅ Extract Title
         title = soup.title.text.strip() if soup.title else "Title not found"
 
-        # Extract Introduction
+        # ✅ Extract Introduction (fallback to first paragraph if needed)
         meta_description = soup.find("meta", attrs={"name": "description"})
-        introduction = meta_description["content"] if meta_description else "Introduction not found."
+        if meta_description and "content" in meta_description.attrs:
+            introduction = meta_description["content"]
+        else:
+            title_tag = soup.find(["h1", "h2", "h3"])  # Look for headers
+            if title_tag:
+                first_paragraph = title_tag.find_next("p")
+                introduction = first_paragraph.text.strip() if first_paragraph else "First paragraph not found."
+            else:
+                introduction = "Introduction not found."
 
         return title, introduction
 
@@ -63,26 +54,24 @@ def extract_title_and_introduction_selenium(url):
         return "Error", f"Error: {str(e)}"
 
 # ✅ Streamlit UI
-st.title("🔍 Web Scraper with Selenium (Headless)")
+st.title("🔍 Bulk Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
 
 # ✅ Input field for multiple URLs (newline-separated)
 urls_input = st.text_area("Enter URLs (one per line):")
 
-# ✅ Process the URLs when user clicks "Scrape"
+# ✅ Process URLs when user clicks "Scrape"
 if st.button("🚀 Scrape"):
     urls = urls_input.strip().split("\n")  # Split input into a list of URLs
-    results = []
 
-    for url in urls:
+    for i, url in enumerate(urls, start=1):
         if url.strip():  # Ensure URL is not empty
             title, introduction = extract_title_and_introduction_selenium(url)
-            results.append({"URL": url, "Title": title, "Introduction": introduction})
 
-    # ✅ Display results in a DataFrame
-    if results:
-        import pandas as pd
-        df_results = pd.DataFrame(results)
-        st.write("### 🔹 Scraping Results:")
-        st.dataframe(df_results)
-    else:
+            # ✅ Display results directly in Streamlit
+            st.subheader(f"🔹 Result {i}")
+            st.write(f"**URL:** {url}")
+            st.write(f"**Title:** {title}")
+            st.write(f"**Introduction:** {introduction}")
+            st.write("---")  # Separator between results
+    if not urls:
         st.warning("⚠️ Please enter at least one valid URL")
