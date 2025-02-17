@@ -129,11 +129,8 @@ df = pd.DataFrame(articles)
 
 
 # In[6]:
-import streamlit as st
-from openai import OpenAI
-
-st.write(f"🔍 OpenAI Version: {openai.__version__}")
-
+import openai
+st.write("✅ OpenAI is installed!")
 
 # ✅ Load API Key from Streamlit secrets
 api_key = st.secrets.get("openai_api_key")
