@@ -1,3 +1,4 @@
+import os
 import time
 import streamlit as st
 from selenium import webdriver
@@ -8,6 +9,20 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
 from bs4 import BeautifulSoup
+import subprocess
+
+# ✅ Install Firefox & Geckodriver Manually (Fix for Streamlit Cloud)
+@st.cache_resource
+def install_firefox_and_geckodriver():
+    os.system("apt-get update")
+    os.system("apt-get install -y firefox-esr")
+    os.system("apt-get install -y wget")
+    os.system("wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz")
+    os.system("tar -xvzf geckodriver-linux64.tar.gz")
+    os.system("chmod +x geckodriver")
+    os.system("mv geckodriver /usr/local/bin/")
+
+install_firefox_and_geckodriver()  
 
 # Define Firefox profile path (Only needed if running locally)
 # profile_path = "/Users/jo/Library/Application Support/Firefox/Profiles/g6jrmmdl.Cookieblock"
