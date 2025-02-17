@@ -45,9 +45,6 @@ if uploaded_file is None:
 
 
 
-# Path to the .eml file
-# file_path = '/Users/jo/Documents/google alerts/Google-melding - wekelijkse samenvatting - 10feb.eml'
-
 # 🔹 Initialize email_body BEFORE checking for file upload to prevent NameError
 email_body = None  
 
@@ -143,12 +140,8 @@ import streamlit as st
 # ✅ Load API Key from Streamlit secrets
 api_key = st.secrets["openai_api_key"]
 
-# ✅ Initialize OpenAI Client (Correct way)
-client = OpenAI()  # No need to pass `api_key` here
-
-# ✅ Set the API key as an environment variable
-import os
-os.environ["OPENAI_API_KEY"] = api_key
+# ✅ Initialize OpenAI Client (Correct way in v1.3.0)
+client = OpenAI(api_key=api_key)
 
 
 # #### Test openai API
