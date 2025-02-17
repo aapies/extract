@@ -1,5 +1,7 @@
 import streamlit as st
+import re
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -7,7 +9,7 @@ from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 from time import sleep
 
-# ✅ Caching WebDriver instance for better performance
+# ✅ Cache WebDriver instance for better performance
 @st.cache_resource
 def get_driver():
     options = Options()
@@ -20,46 +22,67 @@ def get_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
-# ✅ Function to extract title and introduction (without cookie handling)
+# ✅ Function to process "volkskrant" URLs via removepaywall.com
+def process_volkskrant_url(url):
+    try:
+        driver = get_driver()
+        full_url = f"https://www.removepaywall.com/search?url={url}"  # Modify URL for removepaywall
+
+        # Step 1: Get archive link
+        driver.get(full_url)
+        sleep(3)  # Allow page load
+
+        # Locate the iframe and extract its src attribute
+        try:
+            iframe = driver.find_element(By.TAG_NAME, "iframe")
+            archive_url = iframe.get_attribute("src")
+        except:
+            return "No iframe found", "No iframe found"
+
+        # Step 2: Extract title & intro from the archive page
+        driver.get(archive_url)
+        sleep(3)  # Allow page load
+        html = driver.page_source
+
+        # ✅ Extract Introduction
+        section_match = re.search(r'<section.*?>(.*?)</section>', html, re.DOTALL)
+        if section_match:
+            section_content = section_match.group(1)
+            div_match = re.search(r'<div.*?>(.*?)</div>', section_content, re.DOTALL)
+            introduction = re.sub(r'<.*?>', '', div_match.group(1)).strip() if div_match else "No introduction found"
+        else:
+            introduction = "No content section found"
+
+        # ✅ Extract Title
+        title_match = re.search(r'<h1.*?>(.*?)</h1>', html, re.DOTALL)
+        title = re.sub(r'<.*?>', '', title_match.group(1)).strip() if title_match else "No title found"
+
+        return title, introduction
+
+    except Exception as e:
+        return "Error", f"Error: {str(e)}"
+
+# ✅ Function to extract title and introduction normally
 def extract_title_and_introduction_selenium(url):
     try:
-        driver = get_driver()  # ✅ Use the cached driver
+        driver = get_driver()  
         driver.get(url)
-        sleep(3)  # Allow time for content to load
+        sleep(3)  # Allow page load
 
         # ✅ Extract the page source
-        html_content = driver.page_source
-
-        # ✅ Parse with BeautifulSoup
-        soup = BeautifulSoup(html_content, "html.parser")
+        soup = BeautifulSoup(driver.page_source, "html.parser")
 
         # ✅ Extract Title
         title = soup.title.text.strip() if soup.title else "Title not found"
 
-        # ✅ Extract Introduction (with fallback mechanism)
+        # ✅ Extract Introduction (fallback to first paragraph if needed)
         meta_description = soup.find("meta", attrs={"name": "description"})
         if meta_description and "content" in meta_description.attrs:
-            meta_content = meta_description["content"]
-            # If meta content ends with "...", check if a longer fallback exists
-            if meta_content.endswith("..."):
-                title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
-                if title_tag:
-                    first_paragraph = title_tag.find_next("p")
-                    fallback_content = first_paragraph.text.strip() if first_paragraph else ""
-                    introduction = fallback_content if len(fallback_content) > len(meta_content) else meta_content
-                else:
-                    introduction = meta_content
-            else:
-                introduction = meta_content
+            introduction = meta_description["content"]
         else:
-            # Fall back to extracting the first <p> after the title header
-            title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
-            if title_tag:
-                # Find the first <p> after the title
-                first_paragraph = title_tag.find_next("p")  
-                introduction = first_paragraph.text.strip() if first_paragraph else "First paragraph not found."
-            else:
-                introduction = "Introduction not found."
+            title_tag = soup.find(["h1", "h2", "h3"])
+            first_paragraph = title_tag.find_next("p").text.strip() if title_tag and title_tag.find_next("p") else "First paragraph not found."
+            introduction = first_paragraph
 
         return title, introduction
 
@@ -67,13 +90,18 @@ def extract_title_and_introduction_selenium(url):
         return "Error", f"Error: {str(e)}"
 
 # ✅ Streamlit UI
-st.title("Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
+st.title("🔍 Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
 
 url = st.text_input("Enter URL to scrape")
 
 if st.button("Scrape"):
     if url:
-        title, introduction = extract_title_and_introduction_selenium(url)
+        if "volkskrant" in url.lower():
+            title, introduction = process_volkskrant_url(url)
+        else:
+            title, introduction = extract_title_and_introduction_selenium(url)
+
+        # ✅ Display results
         st.subheader("Extracted Title:")
         st.write(title)
         st.subheader("Extracted Introduction:")
