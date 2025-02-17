@@ -90,13 +90,18 @@ def extract_title_and_introduction_selenium(url):
 # ✅ Streamlit UI
 st.title("Selenium Web Scraper (Headless) - Streamlit Cloud Ready")
 
+# ✅ Input box for the URL
 url = st.text_input("Enter URL to scrape")
 
+# ✅ Add a Scrape Button
 if st.button("Scrape"):
-    if url:
+    if url.strip():  # Ensure URL is not empty
         title, introduction = extract_title_and_introduction_selenium(url)
+        
+        # ✅ Display results
         st.subheader("Extracted Title:")
         st.write(title)
+
         st.subheader("Extracted Introduction:")
         st.write(introduction)
     else:
