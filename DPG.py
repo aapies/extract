@@ -135,13 +135,13 @@ df = pd.DataFrame(articles)
 import streamlit as st
 import requests
 
-import openai
+from openai import OpenAI
 
 # ✅ Load API Key from Streamlit secrets
 openai.api_key = st.secrets["openai_api_key"]
 
 # ✅ Initialize OpenAI Client (No `api_key` needed in `OpenAI()` call)
-client = openai.OpenAI()
+client = OpenAI(api_key=api_key)
 
 
 
