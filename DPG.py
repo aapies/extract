@@ -135,8 +135,8 @@ from openai import OpenAI
 import subprocess
 import streamlit as st
 
-result = subprocess.run(["pip", "install", "--upgrade", "openai==1.3.0"], capture_output=True, text=True)
-st.write(result.stdout)
+# result = subprocess.run(["pip", "install", "--upgrade", "openai==1.3.0"], capture_output=True, text=True)
+# st.write(result.stdout)
 
 # ✅ Load API Key from Streamlit secrets
 api_key = st.secrets.get("openai_api_key")
