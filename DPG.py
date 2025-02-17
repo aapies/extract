@@ -9,23 +9,32 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
 from bs4 import BeautifulSoup
-import subprocess
 
-# ✅ Install Firefox & Geckodriver Manually (Fix for Streamlit Cloud)
+# ✅ Download & Set Up Firefox & Geckodriver for Streamlit Cloud
 @st.cache_resource
-def install_firefox_and_geckodriver():
-    os.system("apt-get update")
-    os.system("apt-get install -y firefox-esr")
-    os.system("apt-get install -y wget")
-    os.system("wget https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz")
-    os.system("tar -xvzf geckodriver-linux64.tar.gz")
-    os.system("chmod +x geckodriver")
-    os.system("mv geckodriver /usr/local/bin/")
+def setup_firefox():
+    firefox_bin_path = "/usr/local/bin/firefox/firefox"
+    geckodriver_bin_path = "/usr/local/bin/geckodriver"
 
-install_firefox_and_geckodriver()  
+    # ✅ Download Firefox
+    if not os.path.exists(firefox_bin_path):
+        os.system("mkdir -p /usr/local/bin/firefox")
+        os.system("wget -q https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=en-US -O /usr/local/bin/firefox/firefox.tar.bz2")
+        os.system("tar xjf /usr/local/bin/firefox/firefox.tar.bz2 -C /usr/local/bin/firefox --strip-components=1")
+        os.system("rm /usr/local/bin/firefox/firefox.tar.bz2")
+    
+    # ✅ Download Geckodriver
+    if not os.path.exists(geckodriver_bin_path):
+        os.system("wget -q https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-linux64.tar.gz")
+        os.system("tar -xvzf geckodriver-linux64.tar.gz")
+        os.system("chmod +x geckodriver")
+        os.system("mv geckodriver /usr/local/bin/")
+        os.system("rm geckodriver-linux64.tar.gz")
 
-# Define Firefox profile path (Only needed if running locally)
-# profile_path = "/Users/jo/Library/Application Support/Firefox/Profiles/g6jrmmdl.Cookieblock"
+    return firefox_bin_path, geckodriver_bin_path
+
+# 🚀 Ensure Firefox & Geckodriver are installed
+firefox_path, geckodriver_path = setup_firefox()
 
 # Function to extract title and introduction using Selenium in Streamlit
 def extract_title_and_introduction_selenium(url):
