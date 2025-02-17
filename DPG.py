@@ -132,7 +132,15 @@ df = pd.DataFrame(articles)
 import openai
 from openai import OpenAI
 
-!pip show openai
+import subprocess
+import streamlit as st
+
+# ✅ Run pip show openai using subprocess
+openai_version = subprocess.run(["pip", "show", "openai"], capture_output=True, text=True)
+
+# ✅ Print OpenAI package details
+st.write(f"🔍 OpenAI Package Info:\n{openai_version.stdout}")
+
 
 import subprocess
 
