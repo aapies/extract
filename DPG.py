@@ -9,13 +9,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
-# ✅ Manually set up Chrome & ChromeDriver in Streamlit Cloud
+# ✅ Manually install Chrome & ChromeDriver
 @st.cache_resource
-def setup_chromedriver():
+def setup_chrome():
     chrome_bin = "/usr/bin/chromium-browser"
     chromedriver_bin = "/usr/bin/chromedriver"
 
-    # ✅ Install correct ChromeDriver version if not present
+    # ✅ Download ChromeDriver if missing
     if not os.path.exists(chromedriver_bin):
         os.system("wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip")
         os.system("unzip chromedriver_linux64.zip")
@@ -26,7 +26,7 @@ def setup_chromedriver():
     return chrome_bin, chromedriver_bin
 
 # 🚀 Ensure the correct Chrome & ChromeDriver are set up
-chrome_path, chromedriver_path = setup_chromedriver()
+chrome_path, chromedriver_path = setup_chrome()
 
 # ✅ Function to extract title and introduction using Headless Chrome in Streamlit
 def extract_title_and_introduction_selenium(url):
@@ -48,56 +48,16 @@ def extract_title_and_introduction_selenium(url):
         driver.get(url)
         time.sleep(3)  # Allow initial page load
 
-        # ✅ Step 1: Locate the Shadow DOM host element
-        try:
-            shadow_host = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "pg-host-shadow-root"))
-            )
-            st.success("✅ Shadow DOM host found!")
-
-            # ✅ Step 2: Access the Shadow Root
-            shadow_root = driver.execute_script("return arguments[0].shadowRoot", shadow_host)
-
-            # ✅ Step 3: Find the "Akkoord" button inside the Shadow DOM
-            accept_button = WebDriverWait(shadow_root, 10).until(
-                EC.element_to_be_clickable((By.ID, "pg-accept-btn"))
-            )
-
-            # ✅ Step 4: Click the button
-            try:
-                accept_button.click()
-                st.success("✅ Clicked 'Akkoord' button with Selenium!")
-            except:
-                driver.execute_script("arguments[0].click();", accept_button)
-                st.success("✅ Clicked 'Akkoord' button using JavaScript!")
-
-            time.sleep(3)  # Allow page reload
-
-        except Exception as e:
-            st.warning(f"❌ Could not find or click 'Akkoord' button: {e}")
-
-        # Extract the page source after accepting cookies
-        html_content = driver.page_source
-        driver.quit()  # Close the browser
-
-        # Parse HTML with BeautifulSoup
-        soup = BeautifulSoup(html_content, "html.parser")
+        # ✅ Extract title & introduction
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        driver.quit()  # Close browser
 
         # Extract Title
         title = soup.title.text.strip() if soup.title else "Title not found"
 
-        # Extract Introduction from <meta name="description">
+        # Extract Introduction
         meta_description = soup.find("meta", attrs={"name": "description"})
-        if meta_description and "content" in meta_description.attrs:
-            introduction = meta_description["content"]
-        else:
-            # Fallback: Extract first <p> after the main title header
-            title_tag = soup.find(["h1", "h2", "h3"])
-            if title_tag:
-                first_paragraph = title_tag.find_next("p")
-                introduction = first_paragraph.text.strip() if first_paragraph else "First paragraph not found."
-            else:
-                introduction = "Introduction not found."
+        introduction = meta_description["content"] if meta_description else "Introduction not found."
 
         return title, introduction
 
