@@ -7,7 +7,7 @@ from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 from time import sleep
 
-# ✅ Cache WebDriver instance for better performance
+# ✅ Caching WebDriver instance for better performance
 @st.cache_resource
 def get_driver():
     options = Options()
@@ -20,7 +20,7 @@ def get_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
-# ✅ Function to extract title & introduction
+# ✅ Function to extract title and introduction (without cookie handling)
 def extract_title_and_introduction_selenium(url):
     try:
         driver = get_driver()  # ✅ Use the cached driver
@@ -36,14 +36,27 @@ def extract_title_and_introduction_selenium(url):
         # ✅ Extract Title
         title = soup.title.text.strip() if soup.title else "Title not found"
 
-        # ✅ Extract Introduction (fallback to first paragraph if needed)
+        # ✅ Extract Introduction (with fallback mechanism)
         meta_description = soup.find("meta", attrs={"name": "description"})
         if meta_description and "content" in meta_description.attrs:
-            introduction = meta_description["content"]
+            meta_content = meta_description["content"]
+            # If meta content ends with "...", check if a longer fallback exists
+            if meta_content.endswith("..."):
+                title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
+                if title_tag:
+                    first_paragraph = title_tag.find_next("p")
+                    fallback_content = first_paragraph.text.strip() if first_paragraph else ""
+                    introduction = fallback_content if len(fallback_content) > len(meta_content) else meta_content
+                else:
+                    introduction = meta_content
+            else:
+                introduction = meta_content
         else:
-            title_tag = soup.find(["h1", "h2", "h3"])  # Look for headers
+            # Fall back to extracting the first <p> after the title header
+            title_tag = soup.find(["h1", "h2", "h3"])  # Look for header tags
             if title_tag:
-                first_paragraph = title_tag.find_next("p")
+                # Find the first <p> after the title
+                first_paragraph = title_tag.find_next("p")  
                 introduction = first_paragraph.text.strip() if first_paragraph else "First paragraph not found."
             else:
                 introduction = "Introduction not found."
@@ -54,24 +67,16 @@ def extract_title_and_introduction_selenium(url):
         return "Error", f"Error: {str(e)}"
 
 # ✅ Streamlit UI
-st.title("🔍 Bulk Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
+st.title("Selenium Web Scraper (Chromium) - Streamlit Cloud Ready")
 
-# ✅ Input field for multiple URLs (newline-separated)
-urls_input = st.text_area("Enter URLs (one per line):")
+url = st.text_input("Enter URL to scrape")
 
-# ✅ Process URLs when user clicks "Scrape"
-if st.button("🚀 Scrape"):
-    urls = urls_input.strip().split("\n")  # Split input into a list of URLs
-
-    for i, url in enumerate(urls, start=1):
-        if url.strip():  # Ensure URL is not empty
-            title, introduction = extract_title_and_introduction_selenium(url)
-
-            # ✅ Display results directly in Streamlit
-            st.subheader(f"🔹 Result {i}")
-            st.write(f"**URL:** {url}")
-            st.write(f"**Title:** {title}")
-            st.write(f"**Introduction:** {introduction}")
-            st.write("---")  # Separator between results
-    if not urls:
-        st.warning("⚠️ Please enter at least one valid URL")
+if st.button("Scrape"):
+    if url:
+        title, introduction = extract_title_and_introduction_selenium(url)
+        st.subheader("Extracted Title:")
+        st.write(title)
+        st.subheader("Extracted Introduction:")
+        st.write(introduction)
+    else:
+        st.warning("⚠️ Please enter a valid URL")
