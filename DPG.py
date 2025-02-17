@@ -137,12 +137,18 @@ import requests
 
 from openai import OpenAI
 
+from openai import OpenAI
+import streamlit as st
+
 # ✅ Load API Key from Streamlit secrets
 api_key = st.secrets["openai_api_key"]
 
-# ✅ Initialize OpenAI Client (No `api_key` needed in `OpenAI()` call)
-client = OpenAI(api_key=api_key)
+# ✅ Initialize OpenAI Client (Correct way)
+client = OpenAI()  # No need to pass `api_key` here
 
+# ✅ Set the API key as an environment variable
+import os
+os.environ["OPENAI_API_KEY"] = api_key
 
 
 # #### Test openai API
