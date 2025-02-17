@@ -133,7 +133,7 @@ import streamlit as st
 from openai import OpenAI
 
 # ✅ Load API Key from Streamlit secrets
-api_key = st.secrets.get("openai_api_key", None)
+api_key = st.secrets.get("openai_api_key")
 
 client = OpenAI(api_key)
 
