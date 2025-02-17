@@ -132,7 +132,7 @@ df = pd.DataFrame(articles)
 import streamlit as st
 from openai import OpenAI
 
-st.write(f"🔍 OpenAI Version: {OpenAI.__version__}")
+st.write(f"🔍 OpenAI Version: {openai.__version__}")
 
 
 # ✅ Load API Key from Streamlit secrets
