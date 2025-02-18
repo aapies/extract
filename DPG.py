@@ -782,6 +782,7 @@ from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 from time import sleep
 import time
+import random
 
 SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY")
 PROXY = f"https://scraperapi.proxy:8001?api_key={SCRAPERAPI_KEY}"
