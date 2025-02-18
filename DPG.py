@@ -785,13 +785,13 @@ import time
 import random
 
 SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY")
-PROXY = f"https://scraperapi.proxy:8001?api_key={SCRAPERAPI_KEY}&country_code=nl&session={random.randint(1, 999999)}"
+proxy = f"http://scraperapi:{SCRAPERAPI_KEY}@proxy-server.scraperapi.com:8001"
 
 # ✅ Caching WebDriver instance for better performance
 @st.cache_resource
 def get_driver():
     options = Options()
-    options.add_argument(f"--proxy-server={PROXY}")  # ✅ Use ScraperAPI Proxy
+    options.add_argument(f"--proxy-server={proxy}") 
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
