@@ -115,6 +115,9 @@ for block in article_blocks:
 
 # Convert the list of articles into a pandas DataFrame
 df = pd.DataFrame(articles)
+df = df[90:104]
+st.write("df created")
+st.write(df)
 
 # Display the DataFrame
 #df['Publisher'].unique()
@@ -229,7 +232,7 @@ def get_country_code(website):
 
 # Apply the function to create a new column
 df['Country'] = df['Link'].apply(get_country_code)
-
+st.write("Country code added")
 
 # In[20]:
 
@@ -268,7 +271,7 @@ def classify_country(country):
 
 df_none = df[~df['Country'].isin(["NL", "BE"])]
 df.loc[df_none.index, 'Country'] = df_none['Link'].apply(classify_country)
-
+st.write("Country code added (refined)")
 
 # !!! hier nog een check of alle landen NL, BE, BEFR of BENL zijn
 
@@ -330,12 +333,13 @@ def extract_title_and_introduction(url):
 
 # Apply the function to the DataFrame and create new columns
 df[['title_new', 'introduction_new']] = df['Link'].apply(lambda x: pd.Series(extract_title_and_introduction(x)))
-
+st.write("Titel and intro extracted")
+st.write(df)
 
 # In[92]:
 
 
-df.loc[[37]]
+# df.loc[[37]]
 
 
 # #### Youtube check
@@ -458,7 +462,7 @@ df['evaluation'] = df.apply(
     ), 
     axis=1
 )
-
+st.write("Titel and intro evaluated")
 
 # In[71]:
 
@@ -482,7 +486,8 @@ df['intro check'] = df['intro check'].str.strip()
 
 # Delete cell evaluation
 df = df.drop(columns=['evaluation'])
-
+st.write("Titel and intro evaluations columns added")
+st.write(df)
 
 # ### Een df_goed en df_fout aanmaken. Misschien niet handig maar laat het voor nu zo.
 
@@ -500,6 +505,7 @@ df_goed = df_goed.rename(columns={
     'title_new': 'title sel',
     'introduction_new': 'intro sel'
 })
+st.write(f"🔢 Number of rows in df_goed: {len(df_goed)}")
 
 
 # In[73]:
@@ -508,6 +514,8 @@ df_goed = df_goed.rename(columns={
 # Create a new DataFrame where either 'title check' or 'intro check' contains "Fout"
 df_fout = df[(df['title check'].str.contains('Fout', na=True)) | 
              (df['intro check'].str.contains('Fout', na=True))]
+
+st.write(f"🔢 Number of rows in df_fout: {len(df_fout)}")
 
 
 # In[30]:
@@ -671,7 +679,7 @@ apply_rtbf_extraction(df_goed)
 
 # In[37]:
 
-
+st.write("Nu het enge selenium deel")
 import pandas as pd
 import re
 from selenium import webdriver
