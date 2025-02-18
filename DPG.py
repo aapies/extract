@@ -785,7 +785,7 @@ import time
 import random
 
 SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY")
-PROXY = f"https://scraperapi.proxy:8001?api_key={SCRAPERAPI_KEY}"
+PROXY = f"https://scraperapi.proxy:8001?api_key={SCRAPERAPI_KEY}&session_number={random.randint(1, 999999)}
 
 # ✅ Caching WebDriver instance for better performance
 @st.cache_resource
