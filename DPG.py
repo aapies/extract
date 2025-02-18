@@ -799,11 +799,38 @@ def get_driver():
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
+# ✅ Function to Handle Shadow DOM & Accept Cookies (No Streamlit UI Messages)
+def handle_shadow_dom_and_accept_cookies(driver):
+    """Finds and clicks the 'Akkoord' button inside the Shadow DOM."""
+    try:
+        shadow_host = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "pg-host-shadow-root"))
+        )
+
+        shadow_root = driver.execute_script("return arguments[0].shadowRoot", shadow_host)
+
+        accept_button = WebDriverWait(shadow_root, 10).until(
+            EC.element_to_be_clickable((By.ID, "pg-accept-btn"))
+        )
+
+        try:
+            accept_button.click()
+        except:
+            driver.execute_script("arguments[0].click();", accept_button)
+
+        time.sleep(3)  # Allow page reload
+
+    except Exception:
+        pass  # ✅ No warnings, just continue processing
+
 # ✅ Function to extract title and introduction
 def extract_title_and_introduction_selenium(url, driver):
     try:
         driver.get(url)
-        sleep(3)  # Allow time for content to load
+        time.sleep(random.uniform(3, 5))  # Allow time for content to load
+
+        # ✅ Call function to handle Shadow DOM & Accept Cookies
+        handle_shadow_dom_and_accept_cookies(driver)
 
         # ✅ Extract the page source
         html_content = driver.page_source
