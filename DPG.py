@@ -781,6 +781,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 from time import sleep
+import time
 
 # ✅ Caching WebDriver instance for better performance
 @st.cache_resource
