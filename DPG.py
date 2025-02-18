@@ -783,10 +783,14 @@ from bs4 import BeautifulSoup
 from time import sleep
 import time
 
+SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY")
+PROXY = f"https://scraperapi.proxy:8001?api_key={SCRAPERAPI_KEY}"
+
 # ✅ Caching WebDriver instance for better performance
 @st.cache_resource
 def get_driver():
     options = Options()
+    options.add_argument(f"--proxy-server={PROXY}")  # ✅ Use ScraperAPI Proxy
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
