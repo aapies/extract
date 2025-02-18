@@ -836,7 +836,7 @@ def extract_title_and_introduction_selenium(url, driver):
         time.sleep(random.uniform(3, 5))  # Allow time for content to load
 
         # ✅ Call function to handle Shadow DOM & Accept Cookies
-        handle_shadow_dom_and_accept_cookies(driver)
+        # handle_shadow_dom_and_accept_cookies(driver)
 
         # ✅ Extract the page source
         html_content = driver.page_source
