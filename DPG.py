@@ -912,7 +912,7 @@ def extract_title_and_introduction_selenium_proxy(url):
         chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
         # chrome_options.add_argument("--incognito")
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-
+        
         
 
         service = Service(ChromeDriverManager().install())
@@ -959,6 +959,7 @@ def extract_title_and_introduction_selenium_proxy(url):
 
         # Extract the page source after accepting cookies
         html_content = driver.page_source
+        st.text(html_content[:2000])
         st.write(f"❌ Could not find or click 'Akkoord' button")
         driver.quit()  # Close the browser
 
