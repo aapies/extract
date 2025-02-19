@@ -915,7 +915,7 @@ def extract_title_and_introduction_selenium_proxy(url):
                 EC.presence_of_element_located((By.ID, "pg-host-shadow-root"))
             )
             # st.success("✅ Shadow DOM host found!")
-            st.sidebar.write("✅ Shadow DOM host found!")
+            st.sidebar.empty("✅ Shadow DOM host found!")
 
 
             # ✅ Step 2: Access the Shadow Root
@@ -930,18 +930,18 @@ def extract_title_and_introduction_selenium_proxy(url):
             try:
                 accept_button.click()
                 # st.success("✅ Clicked 'Akkoord' button with Selenium!")
-                st.sidebar.write("✅ Clicked 'Akkoord' button with Selenium!")
+                st.sidebar.empty("✅ Clicked 'Akkoord' button with Selenium!")
             except:
                 driver.execute_script("arguments[0].click();", accept_button)
                 # st.success("✅ Clicked 'Akkoord' button using JavaScript!")
-                st.sidebar.write("✅ Clicked 'Akkoord' button using JavaScript!")
+                st.sidebar.empty("✅ Clicked 'Akkoord' button using JavaScript!")
 
             time.sleep(3)  # Allow page reload
 
         except Exception as e:
             #pass 
             #st.warning(f"❌ Could not find or click 'Akkoord' button: {e}")
-            st.sidebar.write(f"❌ Could not find or click 'Akkoord' button: {e}")
+            st.sidebar.empty(f"❌ Could not find or click 'Akkoord' button: {e}")
 
         # Extract the page source after accepting cookies
         html_content = driver.page_source
