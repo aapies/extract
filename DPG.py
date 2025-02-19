@@ -894,7 +894,7 @@ def extract_title_and_introduction_selenium_proxy(url):
             }
                 }
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
+        # chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
         # chrome_options.add_argument("--incognito")
         
 
