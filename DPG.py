@@ -912,7 +912,7 @@ def extract_title_and_introduction_selenium_proxy(url):
             shadow_host = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, "pg-host-shadow-root"))
             )
-            # st.success("✅ Shadow DOM host found!")
+            st.success("✅ Shadow DOM host found!")
 
             # ✅ Step 2: Access the Shadow Root
             shadow_root = driver.execute_script("return arguments[0].shadowRoot", shadow_host)
@@ -925,15 +925,15 @@ def extract_title_and_introduction_selenium_proxy(url):
             # ✅ Step 4: Click the button
             try:
                 accept_button.click()
-                # st.success("✅ Clicked 'Akkoord' button with Selenium!")
+                st.success("✅ Clicked 'Akkoord' button with Selenium!")
             except:
                 driver.execute_script("arguments[0].click();", accept_button)
-                # st.success("✅ Clicked 'Akkoord' button using JavaScript!")
+                st.success("✅ Clicked 'Akkoord' button using JavaScript!")
 
             time.sleep(3)  # Allow page reload
 
         except Exception as e:
-            # st.warning(f"❌ Could not find or click 'Akkoord' button: {e}")
+            st.warning(f"❌ Could not find or click 'Akkoord' button: {e}")
 
         # Extract the page source after accepting cookies
         html_content = driver.page_source
