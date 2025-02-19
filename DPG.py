@@ -883,6 +883,13 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
+debug_log = []
+
+def log_debug(msg):
+    global debug_log
+    debug_log.append(msg)
+    st.sidebar.text_area("📝 Debug Log", value="\n".join(debug_log), height=200)
+
 def extract_title_and_introduction_selenium_proxy(url):
     try:
         # Set up Selenium with Firefox in headless mode
@@ -901,6 +908,7 @@ def extract_title_and_introduction_selenium_proxy(url):
         # service = Service(GeckoDriverManager().install())
         # driver = webdriver.Firefox(service=service, options=firefox_options)
         SCRAPERAPI_KEY = st.secrets.get("SCRAPERAPI_KEY")
+        log_debug("🔍 Starting Selenium...")
         proxy_options = {
             "proxy": {
             "http": f"http://scraperapi:{SCRAPERAPI_KEY}@proxy-server.scraperapi.com:8001",
@@ -918,7 +926,7 @@ def extract_title_and_introduction_selenium_proxy(url):
         service = Service(ChromeDriverManager().install())
         # driver = webdriver.Chrome(service=service, seleniumwire_options=proxy_options)
         driver = webdriver.Chrome(service=service, options=chrome_options)      
-        
+        log_debug("✅ Browser launched!")
         # Open the website
         driver.get(f"http://api.scraperapi.com?api_key={SCRAPERAPI_KEY}&url={url}")
         # driver.get(url)
