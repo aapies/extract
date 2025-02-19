@@ -911,6 +911,7 @@ def extract_title_and_introduction_selenium_proxy(url):
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
         # chrome_options.add_argument("--incognito")
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
         
