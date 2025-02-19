@@ -868,6 +868,21 @@ def extract_title_and_introduction_selenium(url, driver):
     except Exception as e:
         return "Error", f"Error: {str(e)}"
 
+import time
+import streamlit as st
+# from selenium import webdriver
+# from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.common.by import By
+# from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+# from webdriver_manager.firefox import GeckoDriverManager
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+
 def extract_title_and_introduction_selenium_proxy(url):
     try:
         # Set up Selenium with Firefox in headless mode
