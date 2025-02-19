@@ -959,7 +959,7 @@ def extract_title_and_introduction_selenium_proxy(url):
 
         # Extract the page source after accepting cookies
         html_content = driver.page_source
-        st.text(html_content[:2000])
+        html_short = html_content[:2000])
         st.write(f"❌ Could not find or click 'Akkoord' button")
         driver.quit()  # Close the browser
 
@@ -982,7 +982,7 @@ def extract_title_and_introduction_selenium_proxy(url):
             else:
                 introduction = "Introduction not found."
 
-        return title, introduction
+        return title, introduction, html_short
 
     except Exception as e:
         return "Error", f"Error: {str(e)}"
@@ -998,8 +998,8 @@ def extract_and_add_columns(row, driver):
     # If "HTTPConnectionPool" appears, retry with proxy
     if "HTTPConnectionPool" in title or "HTTPConnectionPool" in introduction:
         print(f"Retrying with proxy for URL: {row['Link']}")
-        title, introduction = extract_title_and_introduction_selenium_proxy(row['Link'])
-
+        title, introduction, html_short = extract_title_and_introduction_selenium_proxy(row['Link'])
+        st.write("🔍 HTML Short Extract (First 2000 chars):\n", html_short)
     return pd.Series([title, introduction], index=['title sel', 'intro sel'])
 
 
