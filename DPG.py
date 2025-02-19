@@ -894,7 +894,7 @@ def extract_title_and_introduction_selenium_proxy(url):
             }
                 }
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
+        chrome_options.add_argument("--headless")  # Uncomment to run in headless mode
         # chrome_options.add_argument("--incognito")
         
 
@@ -905,11 +905,11 @@ def extract_title_and_introduction_selenium_proxy(url):
         # Open the website
         driver.get(f"http://api.scraperapi.com?api_key={SCRAPERAPI_KEY}&url={url}")
         # driver.get(url)
-        time.sleep(6)  # Allow initial page load
+        time.sleep(10)  # Allow initial page load
 
         # ✅ Step 1: Locate the Shadow DOM host element
         try:
-            shadow_host = WebDriverWait(driver, 10).until(
+            shadow_host = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.ID, "pg-host-shadow-root"))
             )
             # st.success("✅ Shadow DOM host found!")
@@ -918,7 +918,7 @@ def extract_title_and_introduction_selenium_proxy(url):
             shadow_root = driver.execute_script("return arguments[0].shadowRoot", shadow_host)
 
             # ✅ Step 3: Find the "Akkoord" button inside the Shadow DOM
-            accept_button = WebDriverWait(shadow_root, 10).until(
+            accept_button = WebDriverWait(shadow_root, 15).until(
                 EC.element_to_be_clickable((By.ID, "pg-accept-btn"))
             )
 
